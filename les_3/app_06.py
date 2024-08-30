@@ -6,6 +6,8 @@
     #     фильтрация данных
 
 
+# Создание (добавление данных)
+
 from flask import Flask
 from models_05 import db, User, Post, Comment # Импорт моделей и объекта db
 

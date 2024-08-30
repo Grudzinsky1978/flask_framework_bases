@@ -1,5 +1,4 @@
-# Изменение данных в таблице
-
+# Удаление данных из таблицы БД
 
 from flask import Flask
 from models_05 import db, User, Post, Comment # Импорт моделей и объекта db
@@ -36,6 +35,19 @@ def edit_user():
 
 # при запуске к файлу не должно быть обращения другой программы, иначе база данных блокируется для изменений
 
+@app.cli.command("del-john")
+def def_user():
+    user = User.query.filter_by(username='John').first()
+    db.session.delete(user)
+    db.session.commit()
+    print('Delete John from DB!')
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+
+# Лайфхак
+# Обычно из БД информацию не удаляют, а добавляют колонку (Visisble или Is Visible), там сохраняют логическое значение по умолчанию True
+# Для того, чтобы не отображать устаревшие данные, Visible присваивают False, фильтром выводят только Visible = True
