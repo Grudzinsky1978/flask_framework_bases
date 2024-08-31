@@ -3,7 +3,7 @@
 {% block content %}
 <h1>Login</h1>
 <form action="{{ url_for('login') }}" method="post">
-    <!-- При переходе на кнопку Отправить ("Login") переход на адрес login -->
+    <!-- При нажатии на кнопку Отправить ("Login") переход на адрес login -->
     {{ form.csrf_token }}
     <p>
         {{ form.username.label }}<br>
