@@ -15,6 +15,7 @@ from fastapi import FastAPI
 
 from typing import Optional
 from pydantic import BaseModel
+import uvicorn as uv
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -50,5 +51,7 @@ async def delete_item(item_id: int):
     return {'item_id': item_id}
 
 
+if __name__ == '__main__':
+    uv.run('main_16:app', host='127.0.0.1', port=8000, reload=True)
 
 # http://127.0.0.1:8000/docs
