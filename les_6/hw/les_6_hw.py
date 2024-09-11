@@ -2,9 +2,11 @@ from typing import List
 import databases
 import sqlalchemy
 from fastapi import FastAPI
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, EmailStr, Field
 import uvicorn as uv
 from datetime import datetime
+
+from wtforms import PasswordField
 
 DATABASE_URL = 'sqlite:///eshop.db'
 
@@ -37,8 +39,8 @@ orders = sqlalchemy.Table(
     sqlalchemy.Column('order_id', sqlalchemy.Integer, primary_key=True),
     sqlalchemy.Column('creator_id', sqlalchemy.Integer, sqlalchemy.ForeignKey('users.user_id'), nullable=False),
     sqlalchemy.Column('prod_id', sqlalchemy.Integer, sqlalchemy.ForeignKey('products.product_id'), nullable=False),
-    sqlalchemy.Column('created_at', sqlalchemy.DateTime, default=datetime.now),
-    sqlalchemy.Column('order_status', sqlalchemy.Boolean, default=False)
+    sqlalchemy.Column('created_at', sqlalchemy.DateTime, default=datetime.now()),
+    sqlalchemy.Column('order_status', sqlalchemy.Boolean, default=True)
 )
 
 
@@ -65,8 +67,8 @@ class User(BaseModel):
     user_id: int
     name: str = Field(max_length=32)
     surname: str = Field(max_length=32)
-    email: str = Field(max_length=128)
-    password: str = Field(max_length=128)
+    email: str = Field(max_length=128, min_length=10, validate_default=EmailStr)
+    password: str = Field(max_length=128, min_length=6, validate_default=PasswordField)
 
 
 class ProductIn(BaseModel):
@@ -87,14 +89,14 @@ class Product(BaseModel):
 class OrderIn(BaseModel):
     creator_id: int
     prod_id: int
-    order_status: bool = Field(default=False)
 
 
 class Order(BaseModel):
     order_id: int
+    created_at: datetime = Field(default=datetime.now())
     creator_id: int
     prod_id: int
-    order_status: bool = Field(default=False)
+    order_status: bool = Field(default=True)
 
 
 
@@ -177,7 +179,7 @@ async def delete_product(product_id: int):
 
 @app.post('/orders/', response_model=Order)
 async def create_order(order: OrderIn):
-    query = orders.insert().values(creator_id=order.creator_id, prod_id=order.prod_id, created_at=order.created_at, order_status=order.order_status)
+    query = orders.insert().values(creator_id=order.creator_id, prod_id=order.prod_id, created_at=datetime.now(), order_status=True)
     last_record_id = await database.execute(query)
     return {**order.dict(), 'order_id': last_record_id}
 
@@ -203,7 +205,7 @@ async def update_order(order_id: int, new_order: OrderIn):
 
 @app.delete('/orders/{order_id}')
 async def delete_order(order_id: int):
-    query = products.delete().where(products.c.order_id == order_id)
+    query = orders.delete().where(orders.c.order_id == order_id)
     await database.execute(query)
     return {'message': 'Заказ удалён'}
 
